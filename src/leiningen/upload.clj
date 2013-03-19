@@ -20,14 +20,15 @@
 
 (defn upload [project filename reponame repodir]
   (let [repo (second (leiningen.deploy/repo-for project reponame))
-        repo-obj (Repository. "upload" (:url repo))]
+        repo-obj (Repository. "upload" (:url repo))
+        f (io/file filename)]
     (println "Upload" filename "==>" (:url repo))
     (doto (.lookup (PomegranateWagonProvider.) (.getProtocol repo-obj))
       (.connect repo-obj (doto (AuthenticationInfo.)
                            (.setUserName (:username repo))
                            (.setPassword (:password repo))
                            (.setPassphrase (:passphrase repo))))
-      (.put (io/file filename) (format "%s/%s" repodir filename)))))
+      (.put f (format "%s/%s" repodir (.getName f))))))
 
 #_(let [files {[(symbol (:group project) (:name project)) (:version project) :extension "tgz"]
                tarfile}]
