@@ -1,4 +1,4 @@
-(defproject com.ingemark/lein-upload "0.1.1"
+(defproject com.ingemark/lein-upload "0.1.2-SNAPSHOT"
   :description "Upload a file to a repository"
   :url "https://github.com/Inge-mark/bundle-pbxis-ws"
   :license {:name "Eclipse Public License"
