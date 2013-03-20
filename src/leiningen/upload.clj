@@ -18,7 +18,9 @@
     (print (:out res)) (print (:err res)) (flush)
     (when-not (zero? (:exit res)) (abort "Command failed with exit code %s: %s" (:exit res) args))))
 
-(defn upload [project filename reponame repodir]
+(defn upload
+  "Upload a file to a repository"
+  [project filename reponame repodir]
   (let [repo (second (leiningen.deploy/repo-for project reponame))
         repo-obj (Repository. "upload" (:url repo))
         f (io/file filename)]
