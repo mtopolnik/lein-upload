@@ -5,6 +5,7 @@
            [clojure.string :as s]
            [cemerick.pomegranate.aether :as aether])
   (import cemerick.pomegranate.aether.PomegranateWagonProvider
+          org.apache.maven.wagon.Wagon
           org.apache.maven.wagon.repository.Repository
           org.apache.maven.wagon.authentication.AuthenticationInfo))
 
@@ -18,24 +19,32 @@
     (print (:out res)) (print (:err res)) (flush)
     (when-not (zero? (:exit res)) (abort "Command failed with exit code %s: %s" (:exit res) args))))
 
-(defn upload
-  "Upload a file to a repository"
-  [project filename reponame repodir]
-  (let [repo (second (leiningen.deploy/repo-for project reponame))
-        repo-obj (Repository. "upload" (:url repo))
-        f (io/file filename)]
-    (println "Upload" filename "==>" (:url repo))
-    (doto (.lookup (PomegranateWagonProvider.) (.getProtocol repo-obj))
-      (.connect repo-obj (doto (AuthenticationInfo.)
-                           (.setUserName (:username repo))
-                           (.setPassword (:password repo))
-                           (.setPassphrase (:passphrase repo))))
-      (.put f (format "%s/%s" repodir (.getName f))))))
-
-#_(let [files {[(symbol (:group project) (:name project)) (:version project) :extension "tgz"]
-               tarfile}]
+#_
+(defn aether-deploy [project file]
+  (let [files {[(symbol (:group project) (:name project)) (:version project) :extension "tgz"]
+               file}]
     (aether/deploy-artifacts
      :artifacts (keys files)
      :files files
      :transfer-listener :stdout
-     :repository [(leiningen.deploy/repo-for project "releases")]))
+     :repository [(leiningen.deploy/repo-for project "releases")])))
+
+(defn upload
+  "Upload a file to a repository"
+  [project filename reponame]
+  (let [f (io/file filename)
+        repo (second (leiningen.deploy/repo-for project reponame))
+        repo-obj (Repository. "" (:url repo))
+        proto (.getProtocol repo-obj)
+        wagon (.lookup (PomegranateWagonProvider.) proto)]
+    (println "Upload" filename "==>" (:url repo))
+    (cond
+     wagon (doto wagon
+             (.connect repo-obj (doto (AuthenticationInfo.)
+                                  (.setUserName (:username repo))
+                                  (.setPassword (:password repo))
+                                  (.setPassphrase (:passphrase repo))))
+             (.put f (.getName f)))
+     (= proto "forge") (sh! "rsync" "-e" "ssh" (.getPath f)
+                            (format "%s@frs.sourceforge.net:/home/frs/project%s/"
+                                    (.getUsername repo-obj) (.getBasedir repo-obj))))))
