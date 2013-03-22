@@ -1,4 +1,4 @@
-(defproject com.ingemark/lein-upload "0.1.3-SNAPSHOT"
+(defproject com.ingemark/lein-upload "0.1.3"
   :description "Upload a file to a repository"
   :url "https://github.com/Inge-mark/lein-upload"
   :license {:name "Eclipse Public License"
