@@ -30,9 +30,14 @@
      :repository [(leiningen.deploy/repo-for project "releases")])))
 
 (defn upload
-  "Upload a file to a repository"
-  [project filename reponame]
-  (let [f (io/file filename)
+  "Upload a file to a repository
+
+Supports:
+- repository URLs that work with the standard lein deploy mechanism
+- SourceForge via a repository URL of the form forge://<project_name>"
+  [project file reponame]
+  (let [filename (if (map? file) (-> file vals first) file)
+        f (io/file filename)
         repo (second (leiningen.deploy/repo-for project reponame))
         repo-obj (Repository. "" (:url repo))
         proto (.getProtocol repo-obj)
