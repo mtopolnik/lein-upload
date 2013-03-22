@@ -46,5 +46,5 @@
                                   (.setPassphrase (:passphrase repo))))
              (.put f (.getName f)))
      (= proto "forge") (sh! "rsync" "-e" "ssh" (.getPath f)
-                            (format "%s@frs.sourceforge.net:/home/frs/project%s/"
-                                    (.getUsername repo-obj) (.getBasedir repo-obj))))))
+                            (format "%s@frs.sourceforge.net:/home/frs/project/%s/"
+                                    (:username repo) (.getHost repo-obj))))))
